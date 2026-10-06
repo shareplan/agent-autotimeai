@@ -6,10 +6,11 @@ import { pipeline } from 'node:stream/promises'
 import archiver from 'archiver'
 import unzipper from 'unzipper'
 
-const excluded = new Set(['node_modules', 'out', '.git', '.claude', '.npm', '.aws', '.ssh', '.config', 'identity.json', 'task.json', 'result.json'])
+const excluded = new Set(['node_modules', 'out', '.git', '.claude', '.npm', '.aws', '.ssh', '.config', '.cache', '.npmrc', '.netrc', '.yarnrc', '.yarnrc.yml', '.gitconfig', '.onecli', 'identity.json', 'task.json', 'result.json'])
 export function safeEntry(name) {
-  const parts = name.replaceAll('\\', '/').split('/')
-  if (name.startsWith('/') || /^[a-z]:/i.test(name) || parts.includes('..') || parts.some(part => part.includes('\0'))) throw new Error('Unsafe archive entry')
+  const normalized = name.replaceAll('\\', '/')
+  const parts = normalized.split('/')
+  if (normalized.startsWith('/') || /^[a-z]:/i.test(name) || parts.includes('..') || parts.some(part => part.includes('\0'))) throw new Error('Unsafe archive entry')
   return parts.filter(Boolean).length > 0 && !parts.some(part => excluded.has(part) || part.startsWith('.env'))
 }
 
@@ -41,6 +42,7 @@ export async function restore(source, destination) {
     if (mode && mode !== 0o100000 && mode !== 0o040000) throw new Error('Unsupported archive entry type')
   }
   await mkdir(destination, { recursive: true })
+  if ((await lstat(destination)).isSymbolicLink() || (await readdir(destination)).length) throw new Error('Restore requires an empty directory without symbolic links')
   for (const entry of zip.files) {
     if (!safeEntry(entry.path)) continue
     const target = path.resolve(destination, entry.path.replaceAll('\\', '/'))

@@ -32,7 +32,7 @@ Run `node "$SKILL_DIR/scripts/render.mjs" project`. It discovers composition IDs
 preferring ProductVideo, and writes `project/out/video.mp4`.
 
 On a render failure, inspect the actual error, repair the code in this same
-session and rerun. Allow at most three render attempts total. If all fail, stop
+session and rerun. Do not start a nested agent. Allow at most three render attempts total. If all fail, stop
 and report failure; never upload a partial video or invent a successful result.
 
 ## Deliver

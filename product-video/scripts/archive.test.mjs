@@ -7,8 +7,8 @@ import { expect, it } from 'vitest'
 import { pack, restore, safeEntry } from './archive.mjs'
 
 it('rejects traversal and excludes runtime credentials', () => {
-  for (const entry of ['../secret', '/etc/passwd', 'C:\\secret', 'src/../../secret']) expect(() => safeEntry(entry)).toThrow()
-  for (const entry of ['.env', 'sub/.env.local', '.git/config', '.claude/settings.json', 'identity.json']) expect(safeEntry(entry)).toBe(false)
+  for (const entry of ['../secret', '/etc/passwd', '\\etc\\passwd', 'C:\\secret', 'src/../../secret']) expect(() => safeEntry(entry)).toThrow()
+  for (const entry of ['.env', 'sub/.env.local', '.git/config', '.claude/settings.json', 'identity.json', '.npmrc', '.netrc', '.onecli/config']) expect(safeEntry(entry)).toBe(false)
 })
 
 it('round trips code and excludes dependencies, videos, and secrets', async () => {
@@ -25,6 +25,7 @@ it('round trips code and excludes dependencies, videos, and secrets', async () =
     const restored = path.join(root, 'restored')
     await restore(archive, restored)
     expect(await readFile(path.join(restored, 'src/Composition.tsx'), 'utf8')).toContain('Video')
+    await expect(restore(archive, restored)).rejects.toThrow('empty directory')
     await expect(readFile(path.join(restored, '.env'))).rejects.toThrow()
     await expect(readFile(path.join(restored, 'out/video.mp4'))).rejects.toThrow()
   } finally { await rm(root, { recursive: true, force: true }) }
