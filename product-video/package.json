@@ -1,0 +1,9 @@
+{
+  "name": "autotime-product-video-skill",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": { "test": "vitest run" },
+  "dependencies": { "archiver": "7.0.1", "unzipper": "0.12.3" },
+  "devDependencies": { "vitest": "4.1.2" }
+}
